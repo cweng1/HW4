@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import render_template, redirect, request, flash, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField
+from wtforms import StringField,IntegerField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
@@ -26,14 +26,14 @@ db = SQLAlchemy(app)
 class cweng1_pokemonapp(db.Model):
     pokemonId = db.Column(db.Integer, primary_key=True)
     pokemon_name = db.Column(db.String(255))
-    maximum_cp = db.Column(db.String(255))
+    maximum_cp = db.Column(db.Integer)
 
     def __repr__(self):
         return "id: {0} | pokemon name: {1} | maximum cp: {2}".format(self.pokemonId, self.pokemon_name, self.maximum_cp)
 
 class PokemonForm(FlaskForm):
     pokemon_name = StringField('Pokemon Name:', validators=[DataRequired()])
-    maximum_cp = StringField('Maximum CP:', validators=[DataRequired()])
+    maximum_cp = IntegerField('Maximum CP:', validators=[DataRequired()])
 
 
 @app.route('/')
