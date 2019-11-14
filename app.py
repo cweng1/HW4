@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import render_template, redirect, request, flash, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField,IntegerField
+from wtforms import StringField, IntegerField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
@@ -40,6 +40,20 @@ class PokemonForm(FlaskForm):
 def index():
     all_pokemons = cweng1_pokemonapp.query.all()
     return render_template('index.html', pokemon=all_pokemons, pageTitle='New Pokemon')
+
+@app.route('/search', methods=['GET','POST'])
+def search():
+    if request.method == 'POST':
+        form=request.form
+        search_value=form['search_string']
+        search = "%{}%".format(search_value)
+        results = cweng1_pokemonapp.query.filter(cweng1_pokemonapp.pokemon_name.like(search)).all()
+        return render_template('index.html', pokemon=results, pageTitle='Pokemon',legend="Search Result")
+    else:
+        return redirect('/')
+
+
+
 
 @app.route('/pokemon/new', methods=['GET', 'POST'])
 def add_pokemon():
