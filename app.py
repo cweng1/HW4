@@ -1,20 +1,20 @@
 from flask import Flask
 from flask import render_template, redirect, request, flash, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField
+from wtforms import StringField, IntegerField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
-#import secrets
-import os
+import secrets
+#import os
 
-dbuser = os.environ.get('DBUSER')
-dbpass = os.environ.get('DBPASS')
-dbhost = os.environ.get('DBHOST')
-dbname = os.environ.get('DBNAME')
+#dbuser = os.environ.get('DBUSER')
+#dbpass = os.environ.get('DBPASS')
+#dbhost = os.environ.get('DBHOST')
+#dbname = os.environ.get('DBNAME')
 
-#conn = "mysql+pymysql://{0}:{1}@{2}/{3}".format(secrets.dbuser, secrets.dbpass, secrets.dbhost, secrets.dbname)
-conn = "mysql+pymysql://{0}:{1}@{2}/{3}".format(dbuser, dbpass, dbhost, dbname)
+conn = "mysql+pymysql://{0}:{1}@{2}/{3}".format(secrets.dbuser, secrets.dbpass, secrets.dbhost, secrets.dbname)
+#conn = "mysql+pymysql://{0}:{1}@{2}/{3}".format(dbuser, dbpass, dbhost, dbname)
 
 
 app = Flask(__name__)
@@ -26,20 +26,34 @@ db = SQLAlchemy(app)
 class cweng1_pokemonapp(db.Model):
     pokemonId = db.Column(db.Integer, primary_key=True)
     pokemon_name = db.Column(db.String(255))
-    maximum_cp = db.Column(db.String(255))
+    maximum_cp = db.Column(db.Integer)
 
     def __repr__(self):
         return "id: {0} | pokemon name: {1} | maximum cp: {2}".format(self.pokemonId, self.pokemon_name, self.maximum_cp)
 
 class PokemonForm(FlaskForm):
     pokemon_name = StringField('Pokemon Name:', validators=[DataRequired()])
-    maximum_cp = StringField('Maximum CP:', validators=[DataRequired()])
+    maximum_cp = IntegerField('Maximum CP:', validators=[DataRequired()])
 
 
 @app.route('/')
 def index():
     all_pokemons = cweng1_pokemonapp.query.all()
     return render_template('index.html', pokemon=all_pokemons, pageTitle='New Pokemon')
+
+@app.route('/search', methods=['GET','POST'])
+def search():
+    if request.method == 'POST':
+        form=request.form
+        search_value=form['search_string']
+        search = "%{}%".format(search_value)
+        results = cweng1_pokemonapp.query.filter(cweng1_pokemonapp.pokemon_name.like(search)).all()
+        return render_template('index.html', pokemon=results, pageTitle='Pokemon',legend="Search Result")
+    else:
+        return redirect('/')
+
+
+
 
 @app.route('/pokemon/new', methods=['GET', 'POST'])
 def add_pokemon():
